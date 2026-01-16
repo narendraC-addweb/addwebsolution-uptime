@@ -1,5 +1,5 @@
 <div align="center" width="100%">
-    <img src="./public/icon.svg" width="128" alt="Addweb Solution Logo" />
+    <img src="./public/addweb.jpg" width="128" alt="Addweb Solution Logo" />
 </div>
 
 # Addweb Solution
