@@ -1,0 +1,84 @@
+############################################
+# Build Healthcheck (Golang)
+############################################
+FROM golang:1.22-alpine AS build_healthcheck
+WORKDIR /app
+
+RUN apk add --no-cache git
+RUN git clone https://github.com/narendraC-addweb/addwebsolution-uptime.git .
+RUN cd extra/healthcheck && go build -o healthcheck
+
+############################################
+# Build Application (Node.js)
+############################################
+FROM node:20-bullseye AS build
+WORKDIR /app
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+
+# System dependencies required by Uptime Kuma
+RUN apt-get update && apt-get install -y \
+    dumb-init \
+    curl \
+    ca-certificates \
+    fonts-liberation \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libnspr4 \
+    libnss3 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxrandr2 \
+    libxdamage1 \
+    libxfixes3 \
+    libasound2 \
+    libxshmfence1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Use non-root user
+RUN useradd -m nodeuser
+USER nodeuser
+
+COPY --chown=nodeuser:nodeuser package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+COPY --chown=nodeuser:nodeuser . .
+
+COPY --chown=nodeuser:nodeuser --from=build_healthcheck /app/extra/healthcheck/healthcheck /app/extra/healthcheck
+
+RUN mkdir data
+
+############################################
+# ⭐ AddWebSolution Runtime Image
+############################################
+FROM node:20-bullseye AS addwebsolution
+WORKDIR /app
+
+LABEL org.opencontainers.image.vendor="AddWeb Solution"
+LABEL org.opencontainers.image.title="Uptime - AddWeb Solution"
+
+ENV UPTIME_KUMA_IS_CONTAINER=1
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+
+# Install runtime deps only
+RUN apt-get update && apt-get install -y \
+    dumb-init \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m nodeuser
+USER nodeuser
+
+COPY --chown=nodeuser:nodeuser --from=build /app /app
+
+EXPOSE 3001
+
+HEALTHCHECK --interval=60s --timeout=30s --start-period=180s --retries=5 \
+  CMD extra/healthcheck
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["node", "server/server.js"]
+
