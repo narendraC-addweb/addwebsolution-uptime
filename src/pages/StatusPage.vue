@@ -685,7 +685,7 @@ export default {
             incident: null,
             previousIncident: null,
             showImageCropUpload: false,
-            imgDataUrl: "/icon.svg",
+            imgDataUrl: "/addweb.jpg",
             loadedTheme: false,
             loadedData: false,
             baseURL: "",
@@ -1200,7 +1200,7 @@ export default {
         },
 
         /**
-         * Reset logo image to default (public/icon.svg)
+         * Reset logo image to default (public/addweb.jpg)
          * @returns {void}
          */
         resetToDefaultImage() {
@@ -1208,7 +1208,7 @@ export default {
                 return;
             }
 
-            this.imgDataUrl = "/icon.svg";
+            this.imgDataUrl = "/addweb.jpg";
             this.config.icon = this.imgDataUrl;
             toast.success(this.$t("imageResetConfirmation"));
         },

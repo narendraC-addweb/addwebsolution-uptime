@@ -493,7 +493,7 @@ class StatusPage extends BeanModel {
      */
     getIcon() {
         if (!this.icon) {
-            return "/icon.svg";
+            return "/addweb.jpg";
         } else {
             return this.icon;
         }

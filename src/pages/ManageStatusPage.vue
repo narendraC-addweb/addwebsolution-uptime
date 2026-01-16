@@ -83,7 +83,7 @@ export default {
          * @returns {string} Correctly formatted path including port numbers
          */
         icon(icon) {
-            if (icon === "/icon.svg") {
+            if (icon === "/addweb.jpg") {
                 return icon;
             } else {
                 return getResBaseURL() + icon;
